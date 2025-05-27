@@ -1,33 +1,30 @@
-import { FC } from 'react';
-import { UploadedImage, uploadedImageState } from '@constants/uploadState';
+import { useEffect } from 'react';
+import { uploadedImageState } from '@recoil/uploadState';
+import { UploadedImage } from '@api/UploadProc.interface';
 import { useRecoilState } from 'recoil';
 import { Icon } from '@iconify/react';
 
-interface Props {
-  image: UploadedImage;
-}
-
-const ImageThumbnail: FC<Props> = ({ image }) => {
+const ImageThumbnail = ({ image }: { image: UploadedImage }) => {
   const [, setImages] = useRecoilState(uploadedImageState);
 
   const handleRemove = () => {
+    URL.revokeObjectURL(image.previewUrl);
     setImages((prev) => prev.filter((img) => img.id !== image.id));
   };
 
   return (
-    <div className="relative w-20 h-24 overflow-hidden bg-gray-100 rounded-md group">
-      <img src={URL.createObjectURL(image.file)} alt={image.file.name} className="object-cover w-full h-full" />
-
+    <div className="relative flex w-[80px] flex-col items-center">
+      <div className="relative h-[80px] w-[80px] rounded bg-gray-300">
+        <img src={image.previewUrl} alt={image.file.name} className="h-full w-full rounded object-cover" />
+      </div>
       <button
         onClick={handleRemove}
-        className="absolute right-1.5 top-1.5 z-10 rounded-full bg-black/60 p-[2px] text-white hover:bg-black/80"
+        className="absolute -right-2 -top-2 z-10 flex h-4 w-4 items-center justify-center rounded-full bg-subBlack text-white shadow-md"
       >
-        <Icon icon="material-symbols:cancel-rounded" width={17} />
+        <Icon icon="material-symbols:close-rounded" width={10} />
       </button>
 
-      <div className="absolute bottom-0 w-full truncate bg-white/70 px-1 text-center text-[8px] text-black">
-        {image.file.name}
-      </div>
+      <div className="mt-1 w-full truncate text-center text-[10px] text-black">{image.file.name}</div>
     </div>
   );
 };

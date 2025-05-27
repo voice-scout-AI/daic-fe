@@ -1,74 +1,90 @@
-import { useEffect, useRef } from 'react';
-import { useRecoilState, useSetRecoilState } from 'recoil';
+import { useState, useEffect, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
+import toast from 'react-hot-toast';
 import { v4 as uuidv4 } from 'uuid';
-import { uploadSingleImage, uploadMultipleImages } from '@api/upload';
 
-import { uploadedImageState, UploadedImage, ocrDataState } from '@constants/uploadState';
-import { stepState } from '@constants/stepState';
+import { useRecoilState, useSetRecoilState } from 'recoil';
+import { uploadedImageState, fromOptionsState, toOptionsState } from '@recoil/uploadState';
+import { uploadImages } from '@api/upload';
+import { stepState } from '@recoil/stepState';
+
+import { UploadedImage, UploadImageResponse } from '@api/UploadProc.interface';
+
 import StepIndicator from '@components/StepIndicator';
 import ImageThumbnail from '@components/ImageThumbnail';
 import { Icon } from '@iconify/react';
 
 const UploadProc = () => {
+  console.log('[UploadProc] 진입함');
   const [images, setImages] = useRecoilState(uploadedImageState);
-  const setOcrData = useSetRecoilState(ocrDataState);
+  const setFromOptions = useSetRecoilState(fromOptionsState);
+  const setToOptions = useSetRecoilState(toOptionsState);
   const [, setStep] = useRecoilState(stepState);
   const navigate = useNavigate();
+  const [isUploading, setIsUploading] = useState(false);
 
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    setStep(1); // Upload 단계 진입 시 stepState를 1로 설정
+    setStep((prev) => (prev !== 1 ? 1 : prev));
   }, [setStep]);
 
   const handleFiles = async (files: FileList | null) => {
     if (!files) return;
 
-    const validFiles = Array.from(files).filter((file) => file.type.startsWith('image/'));
+    const validFiles = Array.from(files).filter(
+      (file) =>
+        file.type.startsWith('image/') &&
+        !images.some((img) => img.file.name === file.name && img.file.size === file.size),
+    );
 
-    const newImages: UploadedImage[] = validFiles.map((file) => ({
+    if (validFiles.length === 0) {
+      toast('모든 파일이 이미 추가되었거나 유효하지 않습니다.', { icon: '⚠️' });
+      return;
+    }
+
+    const mappedImages: UploadedImage[] = validFiles.map((file) => ({
       id: uuidv4(),
       file,
       previewUrl: URL.createObjectURL(file),
     }));
 
-    setImages((prev) => [...prev, ...newImages]);
+    setImages((prev) => [...prev, ...mappedImages]);
+  };
+
+  const handleExtract = async () => {
+    if (images.length === 0 || isUploading) return;
 
     try {
-      let ocrResults: string[] = [];
+      setIsUploading(true);
 
-      if (validFiles.length === 1) {
-        const result = await uploadSingleImage(validFiles[0]);
-        ocrResults = [result];
-      } else {
-        ocrResults = await uploadMultipleImages(validFiles);
-      }
+      const files = images.map((img) => img.file);
+      const result: UploadImageResponse = await uploadImages(files);
 
-      setOcrData((prev) => [
-        ...prev,
-        ...newImages.map((img, i) => ({
-          id: img.id,
-          text: ocrResults[i] || '',
-          fromFramework: '',
-          fromVersion: '',
-        })),
-      ]);
-    } catch (err) {}
+      setFromOptions(result.from);
+      setToOptions(result.to);
+
+      toast.success('이미지 업로드에 성공했어요.');
+      navigate('/extract');
+    } catch (err) {
+      console.error(err);
+      toast.error('이미지 업로드에 실패했어요.');
+    } finally {
+      setIsUploading(false);
+    }
   };
 
   return (
-    <div className="flex flex-col items-center min-h-screen px-4 pt-10 pb-24 bg-black">
+    <div className="flex w-full flex-col items-center bg-black">
       <StepIndicator />
 
-      <div className="w-full px-6 py-8 bg-white shadow-md rounded-xl">
-        <h2 className="mb-4 font-bold text-mid text-subBlack">Step 1. Upload pages</h2>
+      <div className="min-h-card w-full rounded-xl bg-white p-6 shadow-md">
+        <h2 className="mb-4 text-mid font-bold text-subBlack">Step 1. Upload pages</h2>
 
-        {/* Select File */}
         <label
           htmlFor="fileInput"
-          className="flex flex-col items-center justify-center w-full py-10 border border-dashed rounded-lg cursor-pointer border-subBlack text-subBlack"
+          className="flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-subGreen py-10 text-subGreen"
         >
           <Icon icon="solar:gallery-minimalistic-bold-duotone" width={23} />
           <span className="text-sm">Select file</span>
@@ -80,37 +96,36 @@ const UploadProc = () => {
           accept="image/*"
           multiple
           className="hidden"
-          onChange={(e) => handleFiles(e.target.files)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFiles(e.target.files)}
         />
 
-        {/* Or Divider */}
-        <div className="flex items-center my-4 text-sm opacity-50 text-subBlack">
-          <div className="flex-1 h-px bg-gray-300" />
-          <span className="px-4">Or</span>
-          <div className="flex-1 h-px bg-gray-300" />
+        <div className="my-4 flex items-center text-sm opacity-50">
+          <div className="h-px flex-1 bg-subGreen" />
+          <span className="px-4 text-subGreen">Or</span>
+          <div className="h-px flex-1 bg-subGreen" />
         </div>
 
-        {/* Camera Upload */}
         <label
           htmlFor="cameraInput"
-          className="flex items-center justify-center w-full py-3 text-sm text-white rounded-full cursor-pointer bg-subGreen"
+          className="flex w-full cursor-pointer items-center justify-evenly rounded-full bg-subGreen py-3 text-sm text-white"
         >
           <Icon icon="solar:camera-bold-duotone" width={20} />
-          Open camera & Take photo
+          {isUploading ? 'Uploading...' : 'Open camera'}
         </label>
         <input
           id="cameraInput"
           type="file"
           ref={cameraInputRef}
           accept="image/*"
-          capture="environment"
+          capture={'environment' as const}
           className="hidden"
-          onChange={(e) => handleFiles(e.target.files)}
+          onChange={(e: React.ChangeEvent<HTMLInputElement>) => {
+            if (e.target.files) handleFiles(e.target.files);
+          }}
         />
 
-        {/* STEP 1-2: 썸네일 표시 */}
-        {images.length > 0 && (
-          <div className="flex flex-wrap gap-4 mt-6">
+        {images?.length > 0 && (
+          <div className="mt-6 flex flex-wrap gap-4">
             {images.map((img) => (
               <ImageThumbnail key={img.id} image={img} />
             ))}
@@ -118,18 +133,20 @@ const UploadProc = () => {
         )}
       </div>
 
-      {/* Bottom Navigation */}
-      <div className="fixed flex justify-between w-full max-w-screen-sm px-4 bottom-4">
-        <button className="px-6 py-2 text-white rounded-md bg-subBlack" onClick={() => navigate('/entry')}>
+      <div className="mt-10 flex w-full max-w-screen-sm justify-between">
+        <button
+          className="w-button flex items-center justify-between rounded-md bg-subBlack px-4 py-2 text-white"
+          onClick={() => navigate(-1)}
+        >
           <Icon icon="mingcute:left-line" width={18} />
           Back
         </button>
         <button
-          className={`rounded-md px-6 py-2 text-white transition-colors ${
-            images.length > 0 ? 'bg-pointGreen' : 'cursor-not-allowed bg-gray-400'
+          className={`w-button flex items-center justify-between rounded-md px-4 py-2 text-white transition-colors ${
+            images.length === 0 || isUploading ? 'cursor-not-allowed bg-gray-400' : 'bg-pointGreen'
           }`}
-          disabled={images.length === 0}
-          onClick={() => navigate('/extract')}
+          disabled={isUploading || images.length === 0}
+          onClick={handleExtract}
         >
           Next
           <Icon icon="mingcute:right-line" width={18} />

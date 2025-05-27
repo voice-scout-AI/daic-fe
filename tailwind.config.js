@@ -1,4 +1,4 @@
-import { LL_COLOR } from './src/constants/ui';
+import { LL_COLOR, LL_HEIGHT, LL_WIDTH } from './src/constants/ui';
 
 module.exports = {
   content: ['./src/**/*.{js,jsx,ts,tsx}'],
@@ -14,11 +14,11 @@ module.exports = {
         sans: ['DM Sans', 'sans-serif'],
       },
       fontSize: {
-        sm: '18px',
-        mid: '24px',
-        title: '28px',
-        smbold: ['18px', { fontWeight: '700' }],
-        exsm: '15px',
+        sm: '14px',
+        mid: '18px',
+        title: '24px',
+        smbold: ['14px', { fontWeight: '700' }],
+        exsm: '12px',
       },
       letterSpacing: {
         tightest: '-0.05em',
@@ -26,15 +26,27 @@ module.exports = {
       lineHeight: {
         40: '40px',
       },
+      spacing: {
+        card: LL_HEIGHT.card,
+      },
+      maxWidth: {
+        container: LL_WIDTH.container,
+        button: LL_WIDTH.button,
+      },
+
       keyframes: {
         typing: {
           '0%': { width: '0%', visibility: 'hidden' },
           '100%': { width: '100%' },
         },
-        blink: {},
+        blink: {
+          '0%, 100%': { borderColor: 'transparent' },
+          '50%': { borderColor: '#A0AEC0' },
+        },
       },
       animation: {
         typing: 'typing 2s steps(25), blink',
+        blink: 'blink 0.75s step-end infinite',
       },
     },
   },

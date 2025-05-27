@@ -2,9 +2,12 @@ import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-hot-toast';
 import { useRecoilState } from 'recoil';
-import { stepState } from '@constants/stepState';
+import { stepState } from '@recoil/stepState';
 import StepIndicator from '@components/StepIndicator';
+
 import { Icon } from '@iconify/react';
+import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
+import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 
 import { dummy_from_code, dummy_to_code } from '@api/dummy';
 
@@ -45,16 +48,17 @@ const GenerateProc = () => {
 
         <p className="mb-2 text-xs text-gray-500">Main.tsx</p>
 
-        <div className="relative overflow-x-auto rounded-md bg-[#0f172a] p-4 text-sm text-white">
+        <div className="relative">
           <button
-            className="absolute flex items-center gap-1 px-2 py-1 text-xs rounded right-2 top-2 bg-subGreen"
+            className="absolute flex items-center gap-1 px-2 py-1 text-xs text-white rounded right-2 top-2 bg-subGreen"
             onClick={handleCopy}
           >
             <Icon icon="mingcute:copy-line" width={14} /> Copy
           </button>
-          <pre className="whitespace-pre-wrap">
-            <code>{showConverted ? dummy_to_code : dummy_from_code}</code>
-          </pre>
+
+          <SyntaxHighlighter language="javascript" style={oneDark} customStyle={{ borderRadius: '8px' }} wrapLines>
+            {showConverted ? dummy_to_code : dummy_from_code}
+          </SyntaxHighlighter>
         </div>
 
         <button onClick={() => navigate('/')} className="w-full py-2 mt-6 font-bold text-white rounded bg-pointGreen">

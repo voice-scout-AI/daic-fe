@@ -7,3 +7,12 @@ export const LL_COLOR = {
   whiteGreen: '#E1EEE6',
   subBlack: '#484A4B',
 } as const;
+
+export const LL_WIDTH = {
+  container: 1080,
+  button: 120,
+};
+
+export const LL_HEIGHT = {
+  card: 450,
+};

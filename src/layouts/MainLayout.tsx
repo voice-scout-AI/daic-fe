@@ -1,13 +1,15 @@
 import { Outlet } from 'react-router-dom';
 import Header from './Header';
+import { Toaster } from 'react-hot-toast';
 
 const MainLayout = () => {
   return (
-    <div className="flex min-h-screen flex-col bg-black">
+    <div className="flex min-h-screen max-w-container flex-col">
       <Header />
-      <main className="max-screen-sm mx-auto w-full flex-1 px-4 py-8">
+      <main className="m-10 flex-1">
         <Outlet />
       </main>
+      <Toaster position="top-right" />
     </div>
   );
 };

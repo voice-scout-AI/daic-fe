@@ -1,111 +1,127 @@
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useRecoilState, useRecoilValue } from 'recoil';
 import { Icon } from '@iconify/react';
-import { transformState } from '@constants/transformState';
-import { stepState } from '@constants/stepState';
-import { ocrDataState } from '@constants/uploadState';
+import { transformState } from '@recoil/transformState';
+import { stepState } from '@recoil/stepState';
+import { fromOptionsState, toOptionsState } from '@recoil/uploadState';
 import StepIndicator from '@components/StepIndicator';
+import OptionsSelector from '@components/OptionsSelector';
 
 const SelectCard = () => {
   const navigate = useNavigate();
   const [, setStep] = useRecoilState(stepState);
   const [transform, setTransform] = useRecoilState(transformState);
-  const ocrTextList = useRecoilValue(ocrDataState);
-  const ocrText = ocrTextList[0];
 
-  const [fromFramework, setFromFramework] = useState('');
-  const [fromVersion, setFromVersion] = useState('');
-  const [toFramework, setToFramework] = useState(transform.toFramework || '');
-  const [toVersion, setToVersion] = useState(transform.toVersion || '');
+  const fromOptions = useRecoilValue(fromOptionsState);
+  const toOptions = useRecoilValue(toOptionsState);
+
+  const [fromSelected, setFromSelected] = useState<Record<number, { name: string; version: string }>>({});
+  const [toSelected, setToSelected] = useState<Record<number, { name: string; version: string }>>({});
 
   useEffect(() => {
     setStep(2);
   }, [setStep]);
 
-  useEffect(() => {
-    if (ocrText?.fromFramework) {
-      setFromFramework(ocrText.fromFramework);
-    }
-    if (ocrText?.fromVersion) {
-      setFromVersion(ocrText.fromVersion);
-    }
-  }, [ocrText]);
+  const handleSelect = (type: string, field: 'name' | 'version', value: string) => {
+    setToSelections((prev) => ({
+      ...prev,
+      [type]: {
+        ...(prev[type] || {}),
+        [field]: value,
+      },
+    }));
+  };
 
   const handleNext = () => {
-    setTransform({ fromFramework, fromVersion, toFramework, toVersion });
+    const selected = toSelections['framework'];
+    if (selected) {
+      setTransform({
+        fromFramework: fromOptions.find((o) => o.type === 'framework')?.name || '',
+        fromVersion: fromOptions.find((o) => o.type === 'framework')?.possible_versions[0] || '',
+        toFramework: selected.name,
+        toVersion: selected.version,
+      });
+    }
     navigate('/select/check');
   };
 
   return (
-    <div className="flex flex-col items-center gap-6">
+    <div className="flex w-full flex-col items-center bg-black">
       <StepIndicator />
+      <div className="min-h-card w-full rounded-xl bg-white p-6 shadow-md">
+        <h2 className="mb-4 text-mid font-bold text-subBlack">Step 2. Select transformation</h2>
 
-      {/* 카드 */}
-      <div className="w-full max-w-screen-sm px-6 py-8 bg-white shadow-md rounded-xl">
-        {/* 헤더 */}
-        <h2 className="mb-6 font-bold text-mid text-subBlack">Step 2. Transform</h2>
-
-        {/* From / To */}
-        <div className="grid grid-cols-2 gap-8">
-          {/* From */}
-          <div className="flex flex-col gap-3">
-            <label className="text-sm font-semibold">From</label>
-            <select
-              value={fromFramework}
-              onChange={(e) => setFromFramework(e.target.value)}
-              className="p-2 rounded bg-whiteGreen"
-            >
-              <option value="">Select Framework</option>
-              <option value="React">React</option>
-              <option value="Vue">Vue</option>
-              <option value="Angular">Angular</option>
-            </select>
-            <input
-              type="text"
-              placeholder="Version"
-              value={fromVersion}
-              onChange={(e) => setFromVersion(e.target.value)}
-              className="p-2 rounded bg-whiteGreen"
-            />
+        <div className="grid grid-cols-2 gap-6">
+          <div>
+            <h3 className="mb-4 text-center font-semibold text-subBlack">Detect(From)</h3>
+            {fromOptions.map((item) => (
+              <div key={item.id} className="mb-3">
+                <p className="mb-1 text-xs text-gray-600">{item.type}</p>
+                <div className="flex gap-2">
+                  <span className="rounded bg-whiteGreen px-3 py-1 text-sm">{item.name}</span>
+                  <span className="rounded bg-whiteGreen px-3 py-1 text-sm">{item.possible_versions[0]}</span>
+                </div>
+              </div>
+            ))}
           </div>
 
-          {/* To */}
-          <div className="flex flex-col gap-3">
-            <label className="text-sm font-semibold">To</label>
-            <select
-              value={toFramework}
-              onChange={(e) => setToFramework(e.target.value)}
-              className="p-2 rounded bg-whiteGreen"
-            >
-              <option value="">Select Framework</option>
-              <option value="React">React</option>
-              <option value="Vue">Vue</option>
-              <option value="Angular">Angular</option>
-            </select>
-            <input
-              type="text"
-              placeholder="Version (e.g. 18.2)"
-              value={toVersion}
-              onChange={(e) => setToVersion(e.target.value)}
-              className="p-2 rounded bg-whiteGreen"
-            />
+          <div>
+            <h3 className="mb-4 text-center font-semibold text-subBlack">Suggest(To)</h3>
+            {/*
+            
+            {toOptions.map((group) => (
+              <div key={group.id} className="mb-4">
+                <p className="mb-1 text-xs text-gray-600">{group.type}</p>
+                <div className="flex gap-2 mb-2">
+                  <select
+                    className="px-3 py-1 text-sm rounded bg-whiteGreen"
+                    value={toSelections[group.type]?.name || ''}
+                    onChange={(e) => handleSelect(group.type, 'name', e.target.value)}
+                  >
+                    <option value="">Select</option>
+                    {group.suggestions.map((sug) => (
+                      <option key={sug.name} value={sug.name}>
+                        {sug.name}
+                      </option>
+                    ))}
+                  </select>
+
+                  <select
+                    className="px-3 py-1 text-sm rounded bg-whiteGreen"
+                    value={toSelections[group.type]?.version || ''}
+                    onChange={(e) => handleSelect(group.type, 'version', e.target.value)}
+                    disabled={!toSelections[group.type]?.name}
+                  >
+                    <option value="">Version</option>
+                    {group.suggestions
+                      .find((sug) => sug.name === toSelections[group.type]?.name)
+                      ?.versions.map((ver) => (
+                        <option key={ver} value={ver}>
+                          {ver}
+                        </option>
+                      ))}
+                  </select>
+                </div>
+              </div>
+            ))}
+              */}
+            <OptionsSelector fromOptions={fromOptions} toOptions={toOptions} />
           </div>
         </div>
       </div>
-
-      {/* 하단 네비게이션 */}
-      <div className="flex justify-between w-full px-6 mt-8">
+      */
+      <div className="mt-10 flex w-full max-w-screen-sm justify-between">
         <button
-          onClick={() => navigate('/extract')}
-          className="flex items-center gap-1 px-6 py-2 text-white rounded bg-subBlack"
+          className="w-button flex items-center justify-between rounded-md bg-subBlack px-4 py-2 text-white"
+          onClick={() => navigate(-1)}
         >
           <Icon icon="mingcute:left-line" width={18} />
           Back
         </button>
         <button
-          onClick={handleNext}
-          className="flex items-center gap-1 px-6 py-2 font-bold text-black rounded bg-pointGreen"
+          className="w-button flex items-center justify-between rounded-md bg-pointGreen px-4 py-2 text-white"
+          onClick={() => navigate('/select/check')}
         >
           Next
           <Icon icon="mingcute:right-line" width={18} />

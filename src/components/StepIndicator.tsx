@@ -1,11 +1,11 @@
 import { useRecoilValue } from 'recoil';
-import { stepState } from '@constants/stepState';
+import { stepState } from '@recoil/stepState';
 
 const StepIndicator = () => {
   const step = useRecoilValue(stepState);
 
   return (
-    <div className="flex items-center justify-center gap-6">
+    <div className="mb-10 flex w-full items-center justify-around">
       {['Upload', 'Transform', 'Generate'].map((label, index) => {
         const stepIndex = index + 1;
         const isActive = step === stepIndex;

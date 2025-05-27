@@ -1,13 +1,12 @@
-import React from 'react';
-import { HEADER_TITLE, HEADER_EXPL } from '@constants/ui';
 import logo from '@assets/logo.svg';
 import { Icon } from '@iconify/react';
+import { LL_COLOR } from '@constants/ui';
 
 const Header = () => {
   return (
-    <header className="flex items-center justify-between w-full px-4 bg-transparent h-14">
+    <header className="mx-10 flex h-[60px] items-center justify-between bg-transparent px-4">
       <img src={logo} alt="logo" />
-      <Icon icon="ci:hamburger-md" width={30} />
+      <Icon icon="ci:hamburger-md" width={30} color={LL_COLOR.subBlack} />
     </header>
   );
 };

@@ -24,6 +24,7 @@ function App() {
           </Route>
           <Route path="convert" element={<ConvertProc />} />
           <Route path="generate" element={<GenerateProc />} />
+          <Route path="*" element={<div>Not Found</div>} />
         </Route>
       </Routes>
     </BrowserRouter>

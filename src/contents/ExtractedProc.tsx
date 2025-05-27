@@ -1,18 +1,21 @@
 import { useEffect } from 'react';
-import { useSetRecoilState } from 'recoil';
+import { useRecoilValue, useSetRecoilState } from 'recoil';
 import { useNavigate } from 'react-router-dom';
+
 import toast from 'react-hot-toast';
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { dummy_ocr } from '@api/dummy';
-
-import { stepState } from '@constants/stepState';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
-import StepIndicator from '@components/StepIndicator';
 import { Icon } from '@iconify/react';
+
+import { dummy_ocr } from '@api/dummy'; //////////// 수정하기!!
+import { stepState } from '@recoil/stepState';
+import { fromOptionsState } from '@recoil/uploadState';
+import StepIndicator from '@components/StepIndicator';
 
 const ExtractedProc = () => {
   const navigate = useNavigate();
   const setStep = useSetRecoilState(stepState);
+  const fromOptions = useRecoilValue(fromOptionsState);
 
   useEffect(() => {
     setStep(1);
@@ -24,28 +27,24 @@ const ExtractedProc = () => {
   };
 
   return (
-    <div className="flex flex-col items-center w-full">
-      {/* StepIndicator */}
-      <div className="mb-4">
-        <StepIndicator />
-      </div>
+    <div className="flex w-full flex-col items-center bg-black">
+      <StepIndicator />
 
-      {/* 카드 */}
-      <div className="w-full p-4 bg-white shadow-md rounded-xl">
-        <h2 className="mb-4 text-sm font-semibold text-subBlack">Step 1. Upload pages</h2>
+      <div className="w-full rounded-xl bg-white p-6 shadow-md">
+        <h2 className="mb-4 text-mid font-bold text-subBlack">Step 1. Upload pages</h2>
 
         <div className="relative">
           <button
             onClick={handleCopy}
-            className="absolute z-10 flex items-center gap-1 px-2 py-1 text-xs text-white bg-black rounded-md right-2 top-2"
+            className="absolute right-2 top-2 z-10 flex items-center gap-1 rounded-md bg-subGreen px-2 py-1 text-xs text-white"
           >
             <Icon icon="mingcute:copy-line" width={14} /> Copy
           </button>
 
           <SyntaxHighlighter
-            language="javascript"
+            language={fromOptions.filter((option) => option.type === 'language')[0]?.name ?? 'shell'}
             style={oneDark}
-            customStyle={{ borderRadius: '8px', paddingTop: '32px' }}
+            customStyle={{ padding: '15px' }}
             wrapLines
           >
             {dummy_ocr}
@@ -53,13 +52,18 @@ const ExtractedProc = () => {
         </div>
       </div>
 
-      {/* 버튼 */}
-      <div className="flex justify-between w-full px-4 mt-6">
-        <button className="px-4 py-2 text-white rounded-md bg-subBlack" onClick={() => navigate('/upload')}>
+      <div className="mt-10 flex w-full max-w-screen-sm justify-between">
+        <button
+          className="w-button flex items-center justify-between rounded-md bg-subBlack px-4 py-2 text-white"
+          onClick={() => navigate(-1)}
+        >
           <Icon icon="mingcute:left-line" width={18} />
           Back
         </button>
-        <button className="px-4 py-2 text-white rounded-md bg-pointGreen" onClick={() => navigate('/select')}>
+        <button
+          className="w-button flex items-center justify-between rounded-md bg-pointGreen px-4 py-2 text-white"
+          onClick={() => navigate('/select')}
+        >
           Next
           <Icon icon="mingcute:right-line" width={18} />
         </button>
