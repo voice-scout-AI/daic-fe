@@ -8,7 +8,7 @@ import { uploadedImageState, fromOptionsState, toOptionsState } from '@recoil/up
 import { uploadImages } from '@api/upload';
 import { stepState } from '@recoil/stepState';
 
-import { UploadedImage, UploadImageResponse } from '@api/UploadProc.interface';
+import { UploadedImage, UploadImageResponse } from '@api/Upload.interface';
 
 import StepIndicator from '@components/StepIndicator';
 import ImageThumbnail from '@components/ImageThumbnail';
@@ -76,15 +76,15 @@ const UploadProc = () => {
   };
 
   return (
-    <div className="flex w-full flex-col items-center bg-black">
+    <div className="flex flex-col items-center w-full bg-black">
       <StepIndicator />
 
-      <div className="min-h-card w-full rounded-xl bg-white p-6 shadow-md">
-        <h2 className="mb-4 text-mid font-bold text-subBlack">Step 1. Upload pages</h2>
+      <div className="w-full p-6 bg-white shadow-md min-h-card rounded-xl">
+        <h2 className="mb-4 font-bold text-mid text-subBlack">Step 1. Upload pages</h2>
 
         <label
           htmlFor="fileInput"
-          className="flex w-full cursor-pointer flex-col items-center justify-center rounded-lg border border-dashed border-subGreen py-10 text-subGreen"
+          className="flex flex-col items-center justify-center w-full py-10 border border-dashed rounded-lg cursor-pointer border-subGreen text-subGreen"
         >
           <Icon icon="solar:gallery-minimalistic-bold-duotone" width={23} />
           <span className="text-sm">Select file</span>
@@ -99,15 +99,15 @@ const UploadProc = () => {
           onChange={(e: React.ChangeEvent<HTMLInputElement>) => handleFiles(e.target.files)}
         />
 
-        <div className="my-4 flex items-center text-sm opacity-50">
-          <div className="h-px flex-1 bg-subGreen" />
+        <div className="flex items-center my-4 text-sm opacity-50">
+          <div className="flex-1 h-px bg-subGreen" />
           <span className="px-4 text-subGreen">Or</span>
-          <div className="h-px flex-1 bg-subGreen" />
+          <div className="flex-1 h-px bg-subGreen" />
         </div>
 
         <label
           htmlFor="cameraInput"
-          className="flex w-full cursor-pointer items-center justify-evenly rounded-full bg-subGreen py-3 text-sm text-white"
+          className="flex items-center w-full py-3 text-sm text-white rounded-full cursor-pointer justify-evenly bg-subGreen"
         >
           <Icon icon="solar:camera-bold-duotone" width={20} />
           {isUploading ? 'Uploading...' : 'Open camera'}
@@ -125,7 +125,7 @@ const UploadProc = () => {
         />
 
         {images?.length > 0 && (
-          <div className="mt-6 flex flex-wrap gap-4">
+          <div className="flex flex-wrap gap-4 mt-6">
             {images.map((img) => (
               <ImageThumbnail key={img.id} image={img} />
             ))}
@@ -133,9 +133,9 @@ const UploadProc = () => {
         )}
       </div>
 
-      <div className="mt-10 flex w-full max-w-screen-sm justify-between">
+      <div className="flex justify-between w-full max-w-screen-sm mt-10">
         <button
-          className="w-button flex items-center justify-between rounded-md bg-subBlack px-4 py-2 text-white"
+          className="flex items-center justify-between px-4 py-2 text-white rounded-md w-button bg-subBlack"
           onClick={() => navigate(-1)}
         >
           <Icon icon="mingcute:left-line" width={18} />

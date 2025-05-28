@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { UploadImageResponse } from './UploadProc.interface';
+import { UploadImageResponse } from './Upload.interface';
 
 export const uploadImages = async (files: File[]): Promise<UploadImageResponse> => {
   const formData = new FormData();

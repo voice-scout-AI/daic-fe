@@ -23,7 +23,7 @@ export interface ToOptions {
 }
 
 export interface UploadImageResponse {
-  id: string;
+  id: string; // important identifier
   from: FromOptions[];
   to: ToOptions[];
 }

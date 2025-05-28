@@ -1,5 +1,5 @@
-import { FromOptions, ToOptions, UploadedImage } from '@api/UploadProc.interface';
 import { atom } from 'recoil';
+import { FromOptions, ToOptions, UploadedImage } from '@api/Upload.interface';
 
 export const fromOptionsState = atom<FromOptions[]>({
   key: 'fromOptionsState',
