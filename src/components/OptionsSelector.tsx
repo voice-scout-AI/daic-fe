@@ -20,7 +20,10 @@ const OptionsSelector = ({
   onToChange,
 }: SelectCardProps) => {
   const renderFromOption = (option: FromOptions) => {
-    const selected = fromSelected[option.id] || { name: option.name, version: option.possible_versions[0] };
+    const selected = fromSelected[option.id] || {
+      name: option.name,
+      version: option.possible_versions?.[0] || '',
+    };
 
     return (
       <div key={option.id} className="mb-4">
@@ -38,11 +41,11 @@ const OptionsSelector = ({
             value={selected.version}
             onChange={(e) => onFromChange(option.id, 'version', e.target.value)}
           >
-            {option.possible_versions.map((ver) => (
+            {option.possible_versions?.map((ver) => (
               <option key={ver} value={ver}>
                 {ver}
               </option>
-            ))}
+            )) || <option value="">No versions available</option>}
           </select>
         </div>
       </div>
@@ -55,9 +58,9 @@ const OptionsSelector = ({
     return (
       <div key={option.id} className="mb-4">
         <div className="mb-1 text-sm font-semibold capitalize">{option.type}</div>
-        {option.suggestions.map((sugg) => {
+        {option.suggestions?.map((sugg) => {
           const selectedName = selected.name || sugg.name;
-          const selectedVersion = selected.version || sugg.versions[0];
+          const selectedVersion = selected.version || sugg.versions?.[0] || '';
 
           return (
             <div key={sugg.name} className="mb-1 flex space-x-2">
@@ -73,11 +76,11 @@ const OptionsSelector = ({
                 value={selectedVersion}
                 onChange={(e) => onToChange(option.id, 'version', e.target.value)}
               >
-                {sugg.versions.map((ver) => (
+                {sugg.versions?.map((ver) => (
                   <option key={ver} value={ver}>
                     {ver}
                   </option>
-                ))}
+                )) || <option value="">No versions available</option>}
               </select>
             </div>
           );
